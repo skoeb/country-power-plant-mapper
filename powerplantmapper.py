@@ -144,10 +144,12 @@ class CountryPowerPlantMapper(object):
             popplaces = popplaces.to_crs(self.crsid)
             popplaces['in_polygon'] = popplaces.apply(pointinpolygonchecker, axis = 1)
             popplaces = popplaces.loc[popplaces['in_polygon'] == True]
-            if self.populated_places == True:
+            if self.populated_places == False:
+                self.populated_places == False
+            elif self.populated_places == True:
                 self.popplaces = popplaces[['nameascii','pop_max','geometry']]
-            elif type(populated_places) == int:
-                popplaces = popplaces.loc[popplaces['pop_max'] > self.populated_places]
+            else:
+                popplaces = popplaces.loc[popplaces['pop_max'] > int(self.populated_places)]
                 self.popplaces = popplaces[['nameascii','pop_max','geometry']]
         
         if self.urban_areas == True:
