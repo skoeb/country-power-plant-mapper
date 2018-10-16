@@ -45,7 +45,7 @@ class CountryPowerPlantMapper(object):
         else:
             self.crsid = {'init':f'epsg:{coords}'}
         
-        worldshapefiles = 'geometry/world.geojson'
+        worldshapefiles = 'geometry/world10m.geojson'
         worldshapes = gpd.read_file(worldshapefiles)
         worldshapes = worldshapes.to_crs(self.crsid)
         countryshape = worldshapes.loc[worldshapes['ADM0_A3_US'] == self.countryiso3]
@@ -266,7 +266,6 @@ class CountryPowerPlantMapper(object):
             self.cmapcountrydf.reset_index(inplace = True)
             
         if self.populated_places != False:
-            self.popplaces.plot(color = 'k', markersize = 10, ax = ax)
             xs = [i for i in self.popplaces.geometry.x]
             ys = [i for i in self.popplaces.geometry.y]
             ns = [i for i in self.popplaces['nameascii']]

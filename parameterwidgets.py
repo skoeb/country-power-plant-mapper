@@ -177,6 +177,7 @@ def updateplot():
     
     def on_button_clicked(b):
         clear_output()
+        display(mapwidget)
         u = ppm.CountryPowerPlantMapper(countryname = countrynamewidget.value, zoom = zoomwidget.value,
                      coords = coordswidget.value, legend_columns = legendcolumnswidget.value,
                      legend_sorting = legendsortingwidget.value, precursor = precursorwidget.value,
@@ -184,8 +185,7 @@ def updateplot():
                      populated_places = popplaceswidget.value, urban_areas = None,
                      bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value)
         u.mapper()
-        display(mapwidget)
-        
+ 
     mapwidget.on_click(on_button_clicked)
     display(mapwidget)
     createplot()
