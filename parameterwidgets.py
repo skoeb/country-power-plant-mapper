@@ -71,7 +71,7 @@ legendsortingwidget = widgets.Dropdown(
                     )
 
 zoomwidget = widgets.FloatSlider(
-                value=1.3,
+                value=1.5,
                 min=0.5,
                 max=3,
                 step=0.1,
@@ -145,7 +145,6 @@ def showbasicwidgets():
     
 def showadvancedwidgets():
     global precursorwidget, coordswidget, legendcolumnswidget, legendsortingwidget, zoomwidget, islandthreshwidget, popplaceswidget, bubbleopacitywidget
-    display(precursorwidget)
     display(coordswidget)
     display(legendcolumnswidget)
     display(legendsortingwidget)
@@ -153,6 +152,7 @@ def showadvancedwidgets():
     display(islandthreshwidget)
     display(popplaceswidget)
     display(bubbleopacitywidget)
+    display(precursorwidget)
     
     
 def createplot():
@@ -166,7 +166,6 @@ def createplot():
 
 def updateplot():
     from IPython.display import clear_output
-    createplot()
     
     mapwidget = widgets.Button(
                     description='Update Plot',
@@ -189,20 +188,6 @@ def updateplot():
         
     mapwidget.on_click(on_button_clicked)
     display(mapwidget)
-
-def saveplot():
-    display(pathwidget)
-    display(dpiwidget)
-    savewidget = widgets.Button(
-                    description='Save Plot',
-                    disabled=False,
-                    button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                    tooltip='Save Plot',
-                    icon='check',
-                    layout=widgets.Layout(width='70%', height='80px'))
-    def on_button_clicked(b):
-        plt.savefig(pathwidget.value, dpi = dpiwidget.value)
-    savewidget.on_click(on_button_clicked)
-    display(savewidget)
+    createplot()
     
     
