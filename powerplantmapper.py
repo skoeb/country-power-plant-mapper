@@ -235,8 +235,8 @@ class CountryPowerPlantMapper(object):
         
         smap = {'Less than 10MW':2,
                 '10MW - 100MW':4,
-                '100MW - 1000MW':8,
-                'More than 1000MW':12}
+                '100MW - 1000MW':7,
+                'More than 1000MW':11}
       
 
         cmapalldf = pd.DataFrame.from_dict(cmapall, orient = 'index').reset_index()
@@ -277,7 +277,8 @@ class CountryPowerPlantMapper(object):
     
             for x, y, n in zip(xs,ys,ns):
                 ax.annotate(s = n, xy = (x,y), xytext = (x - (x/40), y),
-                            arrowprops=dict(arrowstyle="->")).draggable()       
+                            fontsize = 7,
+                            arrowprops=dict(arrowstyle="->", color = 'black')).draggable()       
         
         if self.title == True:
             plt.xlabel('Data from WRI Global Power Plant Database. 2018.\nGraphic by NREL.', fontsize = 8)
@@ -295,8 +296,8 @@ class CountryPowerPlantMapper(object):
     
         mark1 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=2, markerfacecolor="white", markeredgecolor = 'black')
         mark10 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=4, markerfacecolor="white", markeredgecolor = 'black')
-        mark100 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=8, markerfacecolor="white", markeredgecolor = 'black')
-        mark1000 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=12, markerfacecolor="white", markeredgecolor = 'black')
+        mark100 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=7, markerfacecolor="white", markeredgecolor = 'black')
+        mark1000 = plt.Line2D([0,0],[0,0], color="white", marker='o',markersize=11, markerfacecolor="white", markeredgecolor = 'black')
         marklist = [mark1,mark10,mark100,mark1000]
         marklabellist = ['Less than 10MW','10MW - 100MW','100MW - 1000MW','More than 1000MW']
     
@@ -306,7 +307,7 @@ class CountryPowerPlantMapper(object):
         plt.legend(allmark,
                    allmarklabel,
                    framealpha = 0.9,
-                   numpoints=1, loc='best', fontsize = 6,
+                   numpoints=1, loc='best', fontsize = 7,
                    ncol = self.legend_columns).draggable()
         
         if self.title == True:
