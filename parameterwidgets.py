@@ -5,12 +5,13 @@ Created on Sun Oct 14 22:04:54 2018
 
 @author: skoebric
 """
+
 import ipywidgets as widgets
 import powerplantmapper as ppm
 import matplotlib.pyplot as plt
 
 from IPython.core.display import display, HTML
-display(HTML("<style>.container { width:80% !important; }</style>"))
+display(HTML("<style>.container { width:85% !important; }</style>"))
 
 style = {'description_width': 'initial'}
     
