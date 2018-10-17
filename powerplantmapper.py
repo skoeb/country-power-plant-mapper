@@ -22,7 +22,8 @@ class CountryPowerPlantMapper(object):
                  legend_sorting = 'capacity', precursor = '',
                  island_thresh = 200, additional_powerplants_csv = None,
                  populated_places = False, urban_areas = None,
-                 bubble_opacity = 0.5, simplified = 'Mixed'):
+                 bubble_opacity = 0.5, simplified = 'Mixed',
+                 title = True, source = True):
     
         self.countryname = countryname
         self.zoom = zoom
@@ -37,6 +38,8 @@ class CountryPowerPlantMapper(object):
         self.urban_areas = urban_areas
         self.bubble_opacity = bubble_opacity
         self.simplified = simplified
+        self.title = title
+        self.source = source
         
         if coords == 'spherical':
             self.crsid = {'init':'epsg:3857'}
@@ -242,7 +245,9 @@ class CountryPowerPlantMapper(object):
         self.cmapcountrydf = cmapalldf.loc[cmapalldf['resource'].isin(resourcesset)]
     
     def mapper(self):
-        fig, ax = plt.subplots()
+        import seaborn as sns
+        sns.set_style("white")
+        fig, ax = plt.subplots(dpi = 120)
         self.countryshape.plot(alpha = 1, facecolor = 'white', edgecolor = 'k', linewidth = 1, ax = ax)
         self.countryshape.plot(alpha = 0.05, facecolor = 'green', ax = ax)
         
@@ -273,8 +278,12 @@ class CountryPowerPlantMapper(object):
             for x, y, n in zip(xs,ys,ns):
                 ax.annotate(s = n, xy = (x,y), xytext = (x - (x/40), y),
                             arrowprops=dict(arrowstyle="->")).draggable()       
-                 
-        plt.xlabel('Data from WRI Global Power Plant Database. 2018.\nGraphic by NREL.', fontsize = 8)
+        
+        if self.title == True:
+            plt.xlabel('Data from WRI Global Power Plant Database. 2018.\nGraphic by NREL.', fontsize = 8)
+        elif self.title == False:
+            plt.xlabel('   ',fontsize = 8)
+            
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_visible(False)
@@ -299,10 +308,12 @@ class CountryPowerPlantMapper(object):
                    framealpha = 0.9,
                    numpoints=1, loc='best', fontsize = 8,
                    ncol = self.legend_columns).draggable()
-        plt.tight_layout()
-        plt.title(f'Power Plants in {self.precursor}{self.countryname}')
+        
+        if self.title == True:
+            plt.title(f'Power Plants in {self.precursor}{self.countryname}')
         
         wzoom = self.zoom
         hzoom = self.zoom
         w, h = fig.get_size_inches()
         fig.set_size_inches(w * wzoom, h * hzoom)
+        plt.tight_layout()

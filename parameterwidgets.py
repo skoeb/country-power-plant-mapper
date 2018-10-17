@@ -9,9 +9,10 @@ import ipywidgets as widgets
 import powerplantmapper as ppm
 import matplotlib.pyplot as plt
 
+from IPython.core.display import display, HTML
+display(HTML("<style>.container { width:80% !important; }</style>"))
+
 style = {'description_width': 'initial'}
-
-
     
 countrynamewidget = widgets.Text(
                     value='India',
@@ -71,7 +72,7 @@ legendsortingwidget = widgets.Dropdown(
                     )
 
 zoomwidget = widgets.FloatSlider(
-                value=1.5,
+                value=1,
                 min=0.5,
                 max=3,
                 step=0.1,
@@ -137,6 +138,34 @@ dpiwidget = widgets.IntSlider(
                         readout_format='d',
                         style = style
                 )
+
+dpiwidget = widgets.IntSlider(
+                        value=300,
+                        min=100,
+                        max=500,
+                        step=1,
+                        description='DPI (resolution):',
+                        disabled=False,
+                        continuous_update=False,
+                        orientation='horizontal',
+                        readout=True,
+                        readout_format='d',
+                        style = style
+            )
+
+titlewidget = widgets.RadioButtons(
+                options=[True, False],
+                value= True,
+                description='Title On:',
+                disabled=False
+            )
+
+sourcewidget = widgets.RadioButtons(
+                options=[True, False],
+                value= True,
+                description='Source On:',
+                disabled=False
+            )
     
 def showbasicwidgets():
     global countrynamewidget, simplifiedwidget
@@ -153,6 +182,8 @@ def showadvancedwidgets():
     display(popplaceswidget)
     display(bubbleopacitywidget)
     display(precursorwidget)
+    display(titlewidget)
+    display(sourcewidget)
     
     
 def createplot():
@@ -161,7 +192,8 @@ def createplot():
                  legend_sorting = legendsortingwidget.value, precursor = precursorwidget.value,
                  island_thresh = islandthreshwidget.value, additional_powerplants_csv = None,
                  populated_places = popplaceswidget.value, urban_areas = None,
-                 bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value)
+                 bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value,
+                 title = titlewidget.value, source = sourcewidget.value)
     initial.mapper()
 
 def updateplot():
@@ -183,7 +215,8 @@ def updateplot():
                      legend_sorting = legendsortingwidget.value, precursor = precursorwidget.value,
                      island_thresh = islandthreshwidget.value, additional_powerplants_csv = None,
                      populated_places = popplaceswidget.value, urban_areas = None,
-                     bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value)
+                     bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value,
+                     title = titlewidget.value, source = sourcewidget.value)
         u.mapper()
  
     mapwidget.on_click(on_button_clicked)
