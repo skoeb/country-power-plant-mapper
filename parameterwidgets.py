@@ -87,7 +87,7 @@ zoomwidget = widgets.FloatSlider(
 
 
 islandthreshwidget = widgets.Text(
-                        value='200',
+                        value='5000',
                         placeholder='Type a island thresh',
                         description='Island Size Thresh:',
                         disabled=False,

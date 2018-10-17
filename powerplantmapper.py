@@ -306,7 +306,7 @@ class CountryPowerPlantMapper(object):
         plt.legend(allmark,
                    allmarklabel,
                    framealpha = 0.9,
-                   numpoints=1, loc='best', fontsize = 8,
+                   numpoints=1, loc='best', fontsize = 6,
                    ncol = self.legend_columns).draggable()
         
         if self.title == True:
