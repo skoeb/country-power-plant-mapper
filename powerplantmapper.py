@@ -272,7 +272,7 @@ class CountryPowerPlantMapper(object):
     
             for x, y, n in zip(xs,ys,ns):
                 ax.annotate(s = n, xy = (x,y), xytext = (x - (x/40), y),
-                            arrowprops=dict(arrowstyle="->")).draggable()       
+                            arrowprops=dict(arrowstyle="->")).set_draggable()       
                  
         plt.xlabel('Data from WRI Global Power Plant Database. 2018.\nGraphic by NREL.', fontsize = 8)
         ax.spines['top'].set_visible(False)
@@ -298,7 +298,7 @@ class CountryPowerPlantMapper(object):
                    allmarklabel,
                    framealpha = 0.9,
                    numpoints=1, loc='best', fontsize = 8,
-                   ncol = self.legend_columns).draggable()
+                   ncol = self.legend_columns).set_draggable()
         plt.tight_layout()
         plt.title(f'Power Plants in {self.precursor}{self.countryname}')
         
