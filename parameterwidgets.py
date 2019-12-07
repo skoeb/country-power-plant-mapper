@@ -5,6 +5,8 @@ Created on Sun Oct 14 22:04:54 2018
 
 @author: skoebric
 """
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import ipywidgets as widgets
 import powerplantmapper as ppm
@@ -167,6 +169,13 @@ sourcewidget = widgets.RadioButtons(
                 description='Source On:',
                 disabled=False
             )
+
+disputedwidget = widgets.RadioButtons(
+                options=[True, False],
+                value= True,
+                description='Include Disputed Territories:',
+                disabled=False
+            )
     
 def showbasicwidgets():
     global countrynamewidget, simplifiedwidget
@@ -185,6 +194,7 @@ def showadvancedwidgets():
     display(precursorwidget)
     display(titlewidget)
     display(sourcewidget)
+    display(disputedwidget)
     
     
 def createplot():
@@ -194,7 +204,7 @@ def createplot():
                  island_thresh = islandthreshwidget.value, additional_powerplants_csv = None,
                  populated_places = popplaceswidget.value, urban_areas = None,
                  bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value,
-                 title = titlewidget.value, source = sourcewidget.value)
+                 title = titlewidget.value, source = sourcewidget.value, disputed = disputedwidget.value)
     initial.mapper()
 
 def updateplot():
@@ -217,7 +227,7 @@ def updateplot():
                      island_thresh = islandthreshwidget.value, additional_powerplants_csv = None,
                      populated_places = popplaceswidget.value, urban_areas = None,
                      bubble_opacity = bubbleopacitywidget.value, simplified = simplifiedwidget.value,
-                     title = titlewidget.value, source = sourcewidget.value)
+                     title = titlewidget.value, source = sourcewidget.value, disputed = disputedwidget.value)
         u.mapper()
  
     mapwidget.on_click(on_button_clicked)

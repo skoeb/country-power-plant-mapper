@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import country_converter as coco
 from shapely.geometry import Point, Polygon, MultiPolygon
+import os
 
     
 class CountryPowerPlantMapper(object):
@@ -23,7 +24,7 @@ class CountryPowerPlantMapper(object):
                  island_thresh = 200, additional_powerplants_csv = None,
                  populated_places = False, urban_areas = None,
                  bubble_opacity = 0.5, simplified = 'Mixed',
-                 title = True, source = True):
+                 title = True, source = True, disputed = True):
     
         self.countryname = countryname
         self.zoom = zoom
@@ -40,6 +41,7 @@ class CountryPowerPlantMapper(object):
         self.simplified = simplified
         self.title = title
         self.source = source
+        self.disputed = disputed
         
         if coords == 'spherical':
             self.crsid = {'init':'epsg:3857'}
@@ -48,10 +50,25 @@ class CountryPowerPlantMapper(object):
         else:
             self.crsid = {'init':f'epsg:{coords}'}
         
-        worldshapefiles = 'geometry/world10m.geojson'
+        worldshapefiles = os.path.join('geometry','world10m.geojson')
         worldshapes = gpd.read_file(worldshapefiles)
         worldshapes = worldshapes.to_crs(self.crsid)
         countryshape = worldshapes.loc[worldshapes['ADM0_A3_US'] == self.countryiso3]
+
+        if self.disputed:
+            disputedshapefile = os.path.join('geometry','ne_10m_admin_0_disputed_areas','ne_10m_admin_0_disputed_areas.shp')
+            disputedshapes = gpd.read_file(disputedshapefile)
+            disputedshapes = disputedshapes.to_crs(self.crsid)
+
+            # --- Search 'NOTE_BRK' column for mapped country ---
+            disputedshapes['INCLUDE'] = [self.countryname.upper() in str(i).upper() for i in list(disputedshapes['NOTE_BRK'])]
+            countrydisputed = disputedshapes.loc[disputedshapes['INCLUDE'] == True]
+
+            # --- Concat and dissolve ---
+            countryshape = pd.concat([countryshape, countrydisputed], axis='rows')
+            countryshape['ADM0_A3_US'] = self.countryiso3
+            countryshape = countryshape.dissolve(by='ADM0_A3_US', aggfunc='sum', as_index=False)
+
         if len(countryshape) > 1:
             countryshape = countryshape.sort_values('POP_EST', ascending = False)
             countryshape = countryshape[0:1]
@@ -81,11 +98,11 @@ class CountryPowerPlantMapper(object):
                     multiout = MultiPolygon([P for P in self.countryshape['geometry'].item() if P.area == largestarea])
                 self.countryshape.at[countryshape_index,'geometry'] = multiout            
 
-        ppdb = pd.read_csv('geometry/global_power_plant_database.csv')
+        ppdb = pd.read_csv(os.path.join('geometry','global_power_plant_database.csv'))
         ppdb = ppdb.loc[(ppdb['latitude'] > -90) & (ppdb['latitude'] < 90)]
         ppdb = ppdb.loc[(ppdb['longitude'] > -180) & (ppdb['longitude'] < 180)]
     
-        #Pass a csv file with additional power plants to add columns must be 'country_long' (country name), 'name' (plant name), 'capacity_mw', 'latitude', 'longitude', 'fuel1'. 'estimated_generation_gwh' can also be passed. 
+        #Pass a csv file with additional power plants to add columns must be 'country_long' (country name), 'name' (plant name), 'capacity_mw', 'latitude', 'longitude', 'primary_fuel'. 'estimated_generation_gwh' can also be passed. 
         if self.additional_powerplants_csv != None:
             adddb = pd.read_csv(additional_powerplants_csv)
             ppdb = pd.concat([ppdb, adddb])
@@ -107,7 +124,7 @@ class CountryPowerPlantMapper(object):
         countryppgdf = gpd.GeoDataFrame(countryppdb, geometry = 'geometry')
         countryppgdf.crs = {'init':'epsg:4326'}
         countryppgdf = countryppgdf.to_crs(self.crsid)
-        countryppgdf['fuel1'] = countryppgdf['fuel1'].replace('Petcoke','Oil')
+        countryppgdf['primary_fuel'] = countryppgdf['primary_fuel'].replace('Petcoke','Oil')
         
         def capacitynormalizer(row):
             MWin = row['capacity_mw']
@@ -140,9 +157,9 @@ class CountryPowerPlantMapper(object):
             countryppgdf['in_polygon'] = countryppgdf.apply(pointinpolygonchecker, axis = 1)
             countryppgdf = countryppgdf.loc[countryppgdf['in_polygon'] == True]
             
-        self.countryppgdf = countryppgdf[['name','geometry','norm_cap','fuel1','capacity_mw']]
+        self.countryppgdf = countryppgdf[['name','geometry','norm_cap','primary_fuel','capacity_mw']]
         if self.populated_places != False:
-            popplaces = gpd.read_file('geometry/ne_50m_populated_places_simple/ne_50m_populated_places_simple.shp')
+            popplaces = gpd.read_file(os.path.join('geometry','ne_50m_populated_places_simple','ne_50m_populated_places_simple.shp'))
             popplaces.crs = {'init':'epsg:4326'}
             popplaces = popplaces.to_crs(self.crsid)
             popplaces['in_polygon'] = popplaces.apply(pointinpolygonchecker, axis = 1)
@@ -156,7 +173,7 @@ class CountryPowerPlantMapper(object):
                 self.popplaces = popplaces[['nameascii','pop_max','geometry']]
         
         if self.urban_areas == True:
-            urbanareas = gpd.read_file('geometry/ne_50m_urban_areas/ne_50m_urban_areas.shp')
+            urbanareas = gpd.read_file(os.path.join('geometry','ne_50m_urban_areas','ne_50m_urban_areas.shp'))
             urbanareas.crs = {'init':'epsg:4326'}
             urbanareas = urbanareas.to_crs(self.crsid)
             urbanareas['in_polygon'] = urbanareas.apply(polycrosseschecker, axis = 1)
@@ -210,12 +227,12 @@ class CountryPowerPlantMapper(object):
                         'Storage':'Storage'}
         
         def verboseapplier(row):
-            resourcein = row['fuel1']
+            resourcein = row['primary_fuel']
             resourceout = otherdic[resourcein]
             return resourceout
         
-        self.countryppgdf['fuel1'] = self.countryppgdf.apply(verboseapplier, axis = 1)
-        self.countryppgdf = self.countryppgdf.loc[self.countryppgdf['fuel1'] != 'Other']
+        self.countryppgdf['primary_fuel'] = self.countryppgdf.apply(verboseapplier, axis = 1)
+        self.countryppgdf = self.countryppgdf.loc[self.countryppgdf['primary_fuel'] != 'Other']
             
         cmapall = {'Coal':'#000000',
                    'Cogeneration':'#ffd8b1',
@@ -241,7 +258,7 @@ class CountryPowerPlantMapper(object):
 
         cmapalldf = pd.DataFrame.from_dict(cmapall, orient = 'index').reset_index()
         cmapalldf.columns = ['resource','color']
-        resourcesset = set(self.countryppgdf['fuel1'])
+        resourcesset = set(self.countryppgdf['primary_fuel'])
         self.cmapcountrydf = cmapalldf.loc[cmapalldf['resource'].isin(resourcesset)]
     
     def mapper(self):
@@ -254,9 +271,9 @@ class CountryPowerPlantMapper(object):
         if self.urban_areas != None:
             self.urbanareas.plot(alpha = 0.3, facecolor = 'green', ax = ax)
         
-        capacity_order_list = list(self.countryppgdf.groupby('fuel1')['capacity_mw'].sum().sort_values(ascending = False).index)
+        capacity_order_list = list(self.countryppgdf.groupby('primary_fuel')['capacity_mw'].sum().sort_values(ascending = False).index)
     
-        for ctype, data in self.countryppgdf.sort_values('fuel1', ascending = True).groupby('fuel1'):
+        for ctype, data in self.countryppgdf.sort_values('primary_fuel', ascending = True).groupby('primary_fuel'):
             data.plot(color=self.cmapcountrydf.loc[self.cmapcountrydf['resource'] == ctype]['color'], 
                       label = ctype,
                       ax = ax, 
@@ -278,7 +295,7 @@ class CountryPowerPlantMapper(object):
             for x, y, n in zip(xs,ys,ns):
                 ax.annotate(s = n, xy = (x,y), xytext = (x - (x/40), y),
                             fontsize = 7,
-                            arrowprops=dict(arrowstyle="->", color = 'black')).draggable()       
+                            arrowprops=dict(arrowstyle="->", color = 'black'))     
         
         if self.title == True:
             plt.xlabel('Data from WRI Global Power Plant Database. 2018.\nGraphic by NREL.', fontsize = 8)
@@ -308,8 +325,8 @@ class CountryPowerPlantMapper(object):
                    allmarklabel,
                    framealpha = 0.9,
                    numpoints=1, loc='best', fontsize = 7,
-                   ncol = self.legend_columns).draggable()
-        
+                   ncol = self.legend_columns).set_draggable(True)
+
         if self.title == True:
             plt.title(f'Power Plants in {self.precursor}{self.countryname}')
         
